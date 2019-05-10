@@ -15,17 +15,44 @@
  */
 package io.fabric8.quickstarts.cxf.jaxrs;
 
+import java.net.InetAddress;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import com.google.gson.JsonObject;
+
+
 import io.swagger.annotations.Api;
 
 @Api("/sayHello")
 public class HelloServiceImpl implements HelloService {
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     public String welcome() {
-        return "Welcome to the CXF RS Spring Boot application, append /{name} to call the hello service";
+        return createMessage("Welcome to the CXF RS Spring Boot application, append /{name} to call the hello service");
     }
 
     public String sayHello(String a) {
-        return "Hello " + a + ", Welcome to CXF RS Spring Boot World!!!";
+        return createMessage("Hello " + a + ", Welcome to CXF RS Spring Boot World!!!");
+    }
+    
+    private String createMessage(String content) {
+    	
+    	JsonObject message = new JsonObject();
+    	
+    	message.addProperty("message", content);
+		try {
+			InetAddress localhost = InetAddress.getLocalHost();
+			message.addProperty("podIp", localhost.getHostAddress().trim());
+		}catch(Exception e) {
+			message.addProperty("podIp", "Unknown");
+		}
+    	
+    	String messageString =message.toString(); 
+    	logger.info(messageString);
+    	//System.out.println(messageString);
+    	return messageString;
     }
     
 }
