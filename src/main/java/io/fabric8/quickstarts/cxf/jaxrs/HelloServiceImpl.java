@@ -20,39 +20,52 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import com.google.gson.JsonObject;
 
+import net.logstash.logback.marker.LogstashMarker;
+import net.logstash.logback.marker.Markers;
 
 import io.swagger.annotations.Api;
 
 @Api("/sayHello")
 public class HelloServiceImpl implements HelloService {
-	
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	public String welcome() {
+		return createMessage("Welcome to the CXF RS Spring Boot application, append /{name} to call the hello service",
+				"Unknown");
+	}
 
-    public String welcome() {
-        return createMessage("Welcome to the CXF RS Spring Boot application, append /{name} to call the hello service");
-    }
+	public String sayHello(String a) {
+		return createMessage("Hello " + a + ", Welcome to CXF RS Spring Boot World!!!", a);
+	}
 
-    public String sayHello(String a) {
-        return createMessage("Hello " + a + ", Welcome to CXF RS Spring Boot World!!!");
-    }
-    
-    private String createMessage(String content) {
+	private String createMessage(String content,String a) {
     	
     	JsonObject message = new JsonObject();
     	
     	message.addProperty("message", content);
+    	String appPodIp = "";
+    	
 		try {
 			InetAddress localhost = InetAddress.getLocalHost();
-			message.addProperty("podIp", localhost.getHostAddress().trim());
+			appPodIp=localhost.getHostAddress().trim();
+			message.addProperty("podIp", appPodIp);
 		}catch(Exception e) {
 			message.addProperty("podIp", "Unknown");
 		}
     	
-    	String messageString =message.toString(); 
-    	logger.info(messageString);
+    	String messageString =message.toString();
+    	
+    	LogstashMarker marker = Markers.append("appPodIp", appPodIp)
+    			.and(Markers.append("appGreeterName", a));
+    	
+    	logger.info(marker,messageString);
+    	
+    	//logger.info(messageString);
+    	
+
     	//System.out.println(messageString);
     	return messageString;
     }
-    
+
 }
